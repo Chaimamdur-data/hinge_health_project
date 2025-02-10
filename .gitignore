@@ -1,0 +1,6 @@
+venv/
+__pycache__/
+*.sqlite
+.env
+dbt_project/target/
+dbt_project/logs/
