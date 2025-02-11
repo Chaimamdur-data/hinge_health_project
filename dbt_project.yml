@@ -1,0 +1,26 @@
+dbt-cloud:
+  project-id: 70471823428177
+
+name: "hinge_health_project"
+version: "1.0"
+config-version: 2
+
+profile: "hinge_health_project"
+
+model-paths: ["models"]
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  hinge_health_project:
+    raw:
+      +materialized: view
+    staging:
+      +materialized: view
+    core:
+      +materialized: table
+    final:
+      +materialized: table
+
