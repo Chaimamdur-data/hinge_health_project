@@ -1,31 +1,144 @@
 version: 2
 
 models:
-  - name: mart_cleaned_members  # Renamed from final_cleaned_members
-    description: "Cleaned dataset with invalid records removed"
+  # ✅ Fact Table: Stores all membership activities
+  - name: fact_member_activity
+    description: "Fact table storing membership activity"
     columns:
-      - name: id
-        description: "Unique identifier for members"
+      - name: fact_member_id
+        description: "Surrogate key for fact table"
+        tests:
+          - unique
+          - not_null
+      - name: company_sk
+        description: "Foreign key to dim_company"
+        tests:
+          - relationships:
+              to: ref('dim_company')
+              field: company_sk
+      - name: location_sk
+        description: "Foreign key to dim_location"
+        tests:
+          - relationships:
+              to: ref('dim_location')
+              field: location_sk
+      - name: member_sk
+        description: "Foreign key to dim_member"
+        tests:
+          - relationships:
+              to: ref('dim_member')
+              field: member_sk
+      - name: activity_date
+        description: "Date of last recorded member activity"
+        tests: 
+          - not_null
+      - name: score
+        description: "Performance score (0-100)"
+        tests: 
+          - not_null
+          - between:
+              min_value: 0
+              max_value: 100
+      - name: membership_tenure
+        description: "Number of years since member joined"
         tests:
           - not_null
-      - name: last_active
-        description: "Last active date"
-        tests:
-          - not_null
-          - dbt_utils.expression_is_true:
-              expression: "last_active >= dob"
 
-  - name: mart_members_summary  # Renamed from final_members_summary
-    description: "Summary table for member analytics"
+  # ✅ Dimension Table: Stores unique members  
+  - name: dim_member
+    description: "Dimension table for members"
     columns:
+      - name: member_sk
+        description: "Surrogate key for members"
+        tests:
+          - unique
+          - not_null
+      - name: first_name
+        description: "First name of the member"
+      - name: last_name
+        description: "Last name of the member"
+      - name: dob
+        description: "Date of birth of the member"
+      - name: state
+        description: "State in which the member is located"
+
+  # ✅ Dimension Table: Stores unique companies
+  - name: dim_company
+    description: "Dimension table for companies"
+    columns:
+      - name: company_sk
+        description: "Surrogate key for companies"
+        tests:
+          - unique
+          - not_null
+      - name: company_name
+        description: "Name of the company"
+        tests:
+          - not_null
+
+  # ✅ Dimension Table: Stores unique locations
+  - name: dim_location
+    description: "Geographic dimension table"
+    columns:
+      - name: location_sk
+        description: "Surrogate key for locations"
+        tests:
+          - unique
+          - not_null
+      - name: state
+        description: "Two-letter state code"
+        tests:
+          - not_null
+      - name: region
+        description: "Region classification (e.g., West, East, Other)"
+
+  # ✅ Summary Table: Cleaned Members Data
+  - name: mart_cleaned_members
+    description: "Denormalized table combining fact and dimension tables"
+    columns:
+      - name: fact_member_id
+        description: "Primary key referencing fact table"
+        tests:
+          - unique
+          - not_null
+      - name: first_name
+        description: "First name of the member"
+      - name: last_name
+        description: "Last name of the member"
+      - name: dob
+        description: "Date of birth of the member"
+      - name: company_name
+        description: "Company associated with the member"
+        tests:
+          - not_null
+      - name: activity_date
+        description: "Date of last recorded activity"
+      - name: score
+        description: "Performance score of the member (0-100)"
+        tests:
+          - not_null
+          - between:
+              min_value: 0
+              max_value: 100
+      - name: state
+        description: "State of the member"
+
+  # ✅ Summary Table: Aggregated Member Statistics
+  - name: mart_members_summary
+    description: "Aggregated member data by state and region"
+    columns:
+      - name: region
+        description: "Region classification (e.g., West, East, Other)"
       - name: state
         description: "State of members"
         tests:
           - not_null
       - name: total_members
-        description: "Total number of members"
+        description: "Total number of members in each state"
         tests:
           - not_null
-          - dbt_utils.expression_is_true:
-              expression: "total_members > 0"
+      - name: active_members_last_year
+        description: "Members who were active in the last 12 months"
+        tests:
+          - not_null
 
