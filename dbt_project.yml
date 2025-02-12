@@ -21,6 +21,6 @@ models:
       +materialized: view
     core:
       +materialized: table
-    final:
+    mart::
       +materialized: table
 

@@ -1,0 +1,31 @@
+version: 2
+
+models:
+  - name: mart_cleaned_members  # Renamed from final_cleaned_members
+    description: "Cleaned dataset with invalid records removed"
+    columns:
+      - name: id
+        description: "Unique identifier for members"
+        tests:
+          - not_null
+      - name: last_active
+        description: "Last active date"
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: "last_active >= dob"
+
+  - name: mart_members_summary  # Renamed from final_members_summary
+    description: "Summary table for member analytics"
+    columns:
+      - name: state
+        description: "State of members"
+        tests:
+          - not_null
+      - name: total_members
+        description: "Total number of members"
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: "total_members > 0"
+
