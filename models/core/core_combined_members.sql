@@ -1,7 +1,12 @@
 {{ config(
-    materialized='view',
+    materialized='table'',
     database='workspace'
 ) }}
+{{ config(
+    materialized='incremental',
+    unique_key='id'
+) }}
+
 WITH softball AS (
     SELECT
         id,
@@ -15,6 +20,10 @@ WITH softball AS (
         state,
         'softball' AS source
     FROM {{ ref('stg_us_softball_league') }}
+    
+    {% if is_incremental() %}
+    WHERE last_active > (SELECT MAX(last_active) FROM {{ this }})
+    {% endif %}
 ),
 
 golf AS (
@@ -30,6 +39,10 @@ golf AS (
         state,
         'golf' AS source
     FROM {{ ref('stg_unity_golf_club') }}
+    
+    {% if is_incremental() %}
+    WHERE last_active > (SELECT MAX(last_active) FROM {{ this }})
+    {% endif %}
 ),
 
 combined AS (
@@ -52,3 +65,4 @@ SELECT
 FROM combined c
 LEFT JOIN {{ ref('stg_companies') }} co
 ON c.company_id = co.company_id;
+
