@@ -1,0 +1,32 @@
+version: 2
+
+models:
+  - name: stg_us_softball_league
+    description: "Standardized data from US Softball League"
+    columns:
+      - name: id
+        tests:
+          - unique
+          - not_null
+      - name: dob
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: "dob < CURRENT_DATE"
+
+  - name: stg_unity_golf_club
+    description: "Standardized data from Unity Golf Club"
+    columns:
+      - name: id
+        tests:
+          - unique
+          - not_null
+
+  - name: stg_companies
+    description: "Cleaned company data"
+    columns:
+      - name: company_id
+        tests:
+          - unique
+          - not_null
+
