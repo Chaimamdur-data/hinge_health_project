@@ -27,9 +27,8 @@ models:
   - name: raw_companies
     description: "Company data for mapping"
     columns:
-      - name: company_id
+      - name: id
         description: "Unique identifier for companies"
         tests:
           - unique
           - not_null
-
