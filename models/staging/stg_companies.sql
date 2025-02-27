@@ -4,5 +4,4 @@ WITH source AS (
         name AS company_name
     FROM {{ ref('raw_companies') }}
 )
-SELECT * FROM source;
-
+SELECT * FROM source
