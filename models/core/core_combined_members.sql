@@ -1,5 +1,6 @@
 {{ config(
-    materialized='table'
+    materialized='incremental', 
+    unique_key='id'  -- Ensures incremental updates are properly handled
 ) }}
 
 WITH softball AS (
@@ -17,10 +18,7 @@ WITH softball AS (
     FROM {{ ref('stg_us_softball_league') }} s
     LEFT JOIN {{ ref('state_abbreviations') }} sa
         ON upper(s.state) = upper(sa.state_name)  -- Match full state name to get abbreviation
-    
-    {% if is_incremental() %}
-    WHERE s.last_active > (SELECT MAX(last_active) FROM {{ this }})
-    {% endif %}
+    {{ incremental_filter('s.last_active') }}  -- Use macro here per discussion with Steve
 ),
 
 golf AS (
@@ -36,10 +34,7 @@ golf AS (
         state,  -- Golf data already uses abbreviations
         'golf' AS source
     FROM {{ ref('stg_unity_golf_club') }}
-    
-    {% if is_incremental() %}
-    WHERE last_active > (SELECT MAX(last_active) FROM {{ this }})
-    {% endif %}
+    {{ incremental_filter('last_active') }}  -- Used macro here per discussion with Steve
 ),
 
 combined AS (
