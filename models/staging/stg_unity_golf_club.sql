@@ -1,6 +1,5 @@
 {{ config(
-    materialized='view',
-    database='workspace'
+    materialized='view'
 ) }}
 WITH source AS (
     SELECT
@@ -15,4 +14,4 @@ WITH source AS (
         UPPER(state) AS state
     FROM {{ ref('raw_unity_golf_club') }}
 )
-SELECT * FROM source;
+SELECT * FROM source
