@@ -1,6 +1,5 @@
 {{ config(
     materialized='view',
-    database='workspace'
 ) }}
 WITH source AS (
     SELECT
@@ -12,7 +11,7 @@ WITH source AS (
         CAST(last_active AS DATE) AS last_active,
         score,
         CAST(joined_league AS INT) AS joined_year,
-        UPPER(state) AS state
+        UPPER(us_state) AS state
     FROM {{ ref('raw_us_softball_league') }}
 )
-SELECT * FROM source;
+SELECT * FROM source
