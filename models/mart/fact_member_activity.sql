@@ -1,20 +1,32 @@
 {{ config(
-    materialized='incremental',
     unique_key='fact_member_id'
 ) }}
 
-WITH member_data AS (
-    SELECT 
-        {{ dbt_utils.generate_surrogate_key(['m.id']) }} AS fact_member_id,
-        c.company_sk,
-        l.location_sk,
-        m.member_sk,
-        m.last_active AS activity_date,
-        m.score,
-        (YEAR(CURRENT_DATE) - m.joined_league) AS membership_tenure
-    FROM {{ ref('core_combined_members') }} m
-    LEFT JOIN {{ ref('dim_company') }} c ON m.company_id = c.company_sk
-    LEFT JOIN {{ ref('dim_location') }} l ON m.state = l.state
-)
-SELECT * FROM member_data
+
+
+with
+    member_data as (
+        select
+            md5(
+                cast(
+                    concat(
+                        coalesce(cast(m.id as string), '_dbt_utils_surrogate_key_null_')
+                    ) as string
+                )
+            ) as fact_member_id,
+            c.company_sk,
+            l.location_sk,
+            m.id as member_sk,
+            m.last_active as activity_date,
+            m.score,
+            (year(current_date) - m.joined_year) as membership_tenure
+        from {{ ref('core_combined_members') }} m
+        left join
+            {{ ref('dim_company') }} c
+            on m.company_id = c.company_id
+            
+        left join {{ ref('dim_location') }} l on m.state = l.state
+    )
+select *
+from member_data
 
