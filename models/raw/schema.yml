@@ -1,0 +1,34 @@
+version: 2
+
+models:
+  - name: raw_us_softball_league
+    description: "Raw data from US Softball League"
+    columns:
+      - name: id
+        description: "Unique identifier for each member"
+        tests:
+          - unique
+          - not_null
+
+      - name: date_of_birth
+        description: "Date of birth should not be NULL"
+        tests:
+          - not_null
+
+  - name: raw_unity_golf_club
+    description: "Raw data from Unity Golf Club"
+    columns:
+      - name: id
+        description: "Unique identifier for each golfer"
+        tests:
+          - unique
+          - not_null
+
+  - name: raw_companies
+    description: "Company data for mapping"
+    columns:
+      - name: id
+        description: "Unique identifier for companies"
+        tests:
+          - unique
+          - not_null
