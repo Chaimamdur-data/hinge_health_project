@@ -1,28 +1,25 @@
 {{ config(
-    materialized='table'',
-    database='workspace'
-) }}
-{{ config(
-    materialized='incremental',
-    unique_key='id'
+    materialized='table'
 ) }}
 
 WITH softball AS (
     SELECT
-        id,
-        first_name,
-        last_name,
-        dob,
-        company_id,
-        last_active,
-        score,
-        joined_year,
-        state,
+        s.id,
+        s.first_name,
+        s.last_name,
+        s.dob,
+        s.company_id,
+        s.last_active,
+        s.score,
+        s.joined_year,
+        sa.state_abbr AS state,  -- Standardized state abbreviation
         'softball' AS source
-    FROM {{ ref('stg_us_softball_league') }}
+    FROM {{ ref('stg_us_softball_league') }} s
+    LEFT JOIN {{ ref('state_abbreviations') }} sa
+        ON upper(s.state) = upper(sa.state_name)  -- Match full state name to get abbreviation
     
     {% if is_incremental() %}
-    WHERE last_active > (SELECT MAX(last_active) FROM {{ this }})
+    WHERE s.last_active > (SELECT MAX(last_active) FROM {{ this }})
     {% endif %}
 ),
 
@@ -36,7 +33,7 @@ golf AS (
         last_active,
         score,
         joined_year,
-        state,
+        state,  -- Golf data already uses abbreviations
         'golf' AS source
     FROM {{ ref('stg_unity_golf_club') }}
     
@@ -52,17 +49,14 @@ combined AS (
 )
 
 SELECT
-    c.id,
+    c.source || '_' || c.id AS id,
     c.first_name,
     c.last_name,
     c.dob,
-    co.company_name,
+    c.company_id,
     c.last_active,
     c.score,
     c.joined_year,
-    c.state,
+    c.state,  -- Now always two-letter abbreviation
     c.source
 FROM combined c
-LEFT JOIN {{ ref('stg_companies') }} co
-ON c.company_id = co.company_id;
-
